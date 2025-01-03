@@ -4,7 +4,6 @@ import { passwordHash } from '@/utils/auth/ft_auth';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
 export const POST = async (req: NextRequest) => {
     try {
         const { firstName, lastName, email, password, accessCode } = await req.json();

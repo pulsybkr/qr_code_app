@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -17,18 +19,41 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [error, setError] = useState('');
+  const router = useRouter();
+
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema)
   });
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    setError('');
     try {
-      console.log('Form data:', data);
-      // Logique de connexion ici
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur de connexion');
+      }
+
+      const userData = await response.json();
+      console.log('User data:', userData);
+
+      // Token dans un cookie
+      Cookies.set('token', userData.token, { expires: 1 }); 
+
+      // Rediriger l'utilisateur après une connexion réussie
+      router.push('/dashboard');
     } catch (error) {
       console.error(error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +104,8 @@ export default function LoginPage() {
             </Link>
           </div>
 
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <Button type="submit" isLoading={isLoading}>
             Se connecter
           </Button>
@@ -96,4 +123,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}
