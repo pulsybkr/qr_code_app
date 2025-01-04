@@ -33,27 +33,20 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data)
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur de connexion');
+        throw new Error(responseData.error);
       }
 
-      const userData = await response.json();
-      console.log('User data:', userData);
-
-      // Token dans un cookie
-      Cookies.set('token', userData.token, { expires: 1 }); 
-
-      // Rediriger l'utilisateur après une connexion réussie
       router.push('/dashboard');
-    } catch (error) {
-      console.error(error);
-      setError(error.message);
+    } catch (error: any) {
+      setError(error.message || 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +76,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -102,7 +95,7 @@ export default function LoginPage() {
             >
               Mot de passe oublié ?
             </Link>
-          </div>
+          </div> */}
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
