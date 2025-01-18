@@ -8,6 +8,7 @@ import LogoutModal from '@/components/modals/LogoutModal';
 import Swal from 'sweetalert2';
 import { Menu } from '@headlessui/react'
 import { ChevronDownIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import TodayScans from '@/components/TodayScans';
 
 const DashboardPage = () => {
   const router = useRouter();
@@ -83,7 +84,7 @@ const DashboardPage = () => {
             <Link href="/">
               <Button className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
                 <QrCodeIcon className="h-5 w-5" />
-                <span>Retour au scanner</span>
+                <span>Scanner</span>
               </Button>
             </Link>
 
@@ -94,6 +95,7 @@ const DashboardPage = () => {
                 <ChevronDownIcon className="h-5 w-5" />
               </Menu.Button>
               <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                
                 <Menu.Item>
                   {({ active }) => (
                     <button
@@ -103,6 +105,18 @@ const DashboardPage = () => {
                       } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
                     >
                       Profil
+                    </button>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => router.push('/dashboard/historic')}
+                      className={`${
+                        active ? 'bg-gray-100' : ''
+                      } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
+                    >
+                      Historique
                     </button>
                   )}
                 </Menu.Item>
@@ -132,14 +146,9 @@ const DashboardPage = () => {
             Ici, vous pouvez gérer vos informations, voir vos statistiques, et accéder à d'autres fonctionnalités.
           </p>
         </div>
-      </main>
 
-      {/* Pied de page */}
-      <footer className="bg-white shadow-md p-4 mt-4">
-        <div className="container mx-auto text-center">
-          <p className="text-gray-600">&copy; 2024 Votre Application.</p>
-        </div>
-      </footer>
+        <TodayScans />
+      </main>
 
       <ProfileModal
         isOpen={isProfileModalOpen}
