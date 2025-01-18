@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         const { code } = await request.json();
         // Lancer un navigateur headless
         const browser = await puppeteer.launch({ 
-            executablePath: process.env.CHROMIUM_PATH,
+            executablePath: await chromium.executablePath() || process.env.CHROMIUM_PATH,
             args: chromium.args,
             headless: chromium.headless,
         }); 
