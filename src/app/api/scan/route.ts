@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export async function POST(request: Request) {
     try {
         const { code } = await request.json();
         // Lancer un navigateur headless
-        const browser = await puppeteer.launch({ headless: true }); // Correction de la valeur de headless
+        const browser = await puppeteer.launch({ 
+            executablePath: process.env.CHROMIUM_PATH,
+            args: chromium.args,
+            headless: chromium.headless,
+        }); 
         const page = await browser.newPage();
         
         // Naviguer vers l'URL
