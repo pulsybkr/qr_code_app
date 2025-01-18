@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -43,7 +44,13 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(responseData.error);
       }
-
+      Swal.fire({
+        title: 'Connexion réussie',
+        text: 'Vous êtes maintenant connecté, vous allez être redirigé vers la page d\'accueil',
+        icon: 'success',
+        confirmButtonText: 'Continuer',
+        timer: 3000,
+      });
       router.push('/');
     } catch (error: any) {
       setError(error.message || 'Une erreur est survenue');
