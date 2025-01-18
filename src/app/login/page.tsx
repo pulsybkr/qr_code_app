@@ -44,7 +44,7 @@ export default function LoginPage() {
         throw new Error(responseData.error);
       }
 
-      router.push('/dashboard');
+      router.push('/');
     } catch (error: any) {
       setError(error.message || 'Une erreur est survenue');
     } finally {

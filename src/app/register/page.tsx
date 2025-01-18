@@ -28,7 +28,6 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      console.log('Form data:', data);
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(data)
@@ -51,7 +50,6 @@ export default function RegisterPage() {
           icon: 'error',
           confirmButtonText: 'OK'
         });
-        console.log(result);
       }
       // Logique d'inscription ici
     } catch (error) {

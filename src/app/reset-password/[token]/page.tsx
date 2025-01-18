@@ -30,7 +30,6 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
     try {
-      console.log('Form data:', data);
       // Logique de réinitialisation ici avec params.token
       setIsSuccess(true);
     } catch (error) {

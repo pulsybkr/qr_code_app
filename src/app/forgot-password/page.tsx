@@ -24,7 +24,6 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      console.log('Form data:', data);
       // Logique d'envoi d'email ici
       setEmailSent(true);
     } catch (error) {
