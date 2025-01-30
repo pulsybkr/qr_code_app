@@ -61,8 +61,10 @@ export const POST = async (req: NextRequest) => {
             firstName, 
             lastName, 
             email, 
+            role: 'admin',
             password: passwordHash(password) 
         });
+
 
         if (!user) {
             return NextResponse.json({ 
