@@ -113,7 +113,7 @@ export default function UsersManagement() {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`/api/users/${userId}/reset-password`, {
+        const response = await fetch(`/api/users/${userId}`, {
           method: "POST",
         });
         const data = await response.json();

@@ -5,19 +5,18 @@ import { verifyAdmin } from '@/utils/auth/verifyAdmin';
 
 // DELETE - Supprimer un contrôleur
 export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+    request: NextRequest
+): Promise<NextResponse> {
     try {
-        // Vérifier si l'utilisateur est admin
-        const isAdmin = await verifyAdmin(req);
+        const isAdmin = await verifyAdmin(request);
         if (!isAdmin) {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
+        const id = request.url.split('/').pop();
         const user = await Controlleur.findOne({ 
             where: { 
-                id: params.id,
+                id: id,
                 role: 'controlleur'
             } 
         });
@@ -35,19 +34,18 @@ export async function DELETE(
 
 // POST - Réinitialiser le mot de passe
 export async function POST(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+    request: NextRequest
+): Promise<NextResponse> {
     try {
-        // Vérifier si l'utilisateur est admin
-        const isAdmin = await verifyAdmin(req);
+        const isAdmin = await verifyAdmin(request);
         if (!isAdmin) {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
+        const id = request.url.split('/').pop();
         const user = await Controlleur.findOne({ 
             where: { 
-                id: params.id,
+                id: id,
                 role: 'controlleur'
             } 
         });
@@ -57,7 +55,10 @@ export async function POST(
         }
 
         const newPassword = generateRandomPassword();
-        await user.update({ password: passwordHash(newPassword) });
+        await user.update({ 
+            password: passwordHash(newPassword),
+            tempPassword: newPassword
+        });
 
         return NextResponse.json({ 
             message: 'Mot de passe réinitialisé avec succès',
