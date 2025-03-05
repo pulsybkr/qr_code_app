@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Controlleur from '../../../../../models/User';
+import prisma from '@/lib/prisma';
 import { passwordCompare } from '@/utils/auth/ft_auth';
 import dotenv from 'dotenv';
 import { cookies } from 'next/headers';
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Vérifiez si l'utilisateur existe
-        const user = await Controlleur.findOne({ where: { email } });
+        const user = await prisma.controlleur.findUnique({ where: { email } });
         if (!user) {
             // Incrémenter le compteur de tentatives
             updateLoginAttempts(email);

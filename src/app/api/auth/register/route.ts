@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Controlleur from '../../../../../models/User';
+import prisma from '@/lib/prisma';
 import { passwordHash } from '@/utils/auth/ft_auth';
 import dotenv from 'dotenv';
 
@@ -52,17 +52,19 @@ export const POST = async (req: NextRequest) => {
             return NextResponse.json({ error: 'Code de validation incorrect' }, { status: 400 });
         }
 
-        const emailExist = await Controlleur.findOne({ where: { email } });
+        const emailExist = await prisma.controlleur.findUnique({ where: { email } });
         if (emailExist) {
             return NextResponse.json({ error: 'Email déjà utilisé' }, { status: 400 });
         }
 
-        const user = await Controlleur.create({ 
-            firstName, 
-            lastName, 
-            email, 
-            role: 'admin',
-            password: passwordHash(password) 
+        const user = await prisma.controlleur.create({ 
+            data: {
+                firstName, 
+                lastName, 
+                email, 
+                role: 'admin',
+                password: passwordHash(password)
+            }
         });
 
 

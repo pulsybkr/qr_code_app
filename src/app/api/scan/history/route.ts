@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Op } from 'sequelize';
-import Scan from '../../../../../models/Scan';
+import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
     try {
@@ -11,30 +10,37 @@ export async function GET(req: NextRequest) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
 
-        const whereClause: any = {};
+        // Construire la condition where
+        let whereCondition: any = {};
 
-        // Filtre de recherche
+        // Ajouter la recherche si nécessaire
         if (search) {
-            whereClause[Op.or] = [
-                { nom: { [Op.iLike]: `%${search}%` } },
-                { prenom: { [Op.iLike]: `%${search}%` } },
-                { licence: { [Op.iLike]: `%${search}%` } }
+            whereCondition.OR = [
+                { nom: { contains: search, mode: 'insensitive' } },
+                { prenom: { contains: search, mode: 'insensitive' } },
+                { licence: { contains: search, mode: 'insensitive' } }
             ];
         }
 
-        // Filtre de date
+        // Ajouter le filtre de date si nécessaire
         if (startDate && endDate) {
-            whereClause.createdAt = {
-                [Op.between]: [new Date(startDate), new Date(endDate)]
+            whereCondition.createdAt = {
+                gte: new Date(startDate),
+                lte: new Date(endDate)
             };
         }
 
-        // Récupération des données avec pagination
-        const { count, rows } = await Scan.findAndCountAll({
-            where: whereClause,
-            order: [['createdAt', 'DESC']],
-            limit,
-            offset: (page - 1) * limit
+        // Compter le nombre total d'enregistrements
+        const count = await prisma.scan.count({
+            where: whereCondition
+        });
+
+        // Récupérer les données avec pagination
+        const rows = await prisma.scan.findMany({
+            where: whereCondition,
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            skip: (page - 1) * limit
         });
 
         return NextResponse.json({
@@ -59,25 +65,30 @@ export async function POST(req: NextRequest) {
     try {
         const { startDate, endDate, search } = await req.json();
         
-        const whereClause: any = {};
+        // Construire la condition where
+        let whereCondition: any = {};
 
+        // Ajouter la recherche si nécessaire
         if (search) {
-            whereClause[Op.or] = [
-                { nom: { [Op.iLike]: `%${search}%` } },
-                { prenom: { [Op.iLike]: `%${search}%` } },
-                { licence: { [Op.iLike]: `%${search}%` } }
+            whereCondition.OR = [
+                { nom: { contains: search, mode: 'insensitive' } },
+                { prenom: { contains: search, mode: 'insensitive' } },
+                { licence: { contains: search, mode: 'insensitive' } }
             ];
         }
 
+        // Ajouter le filtre de date si nécessaire
         if (startDate && endDate) {
-            whereClause.createdAt = {
-                [Op.between]: [new Date(startDate), new Date(endDate)]
+            whereCondition.createdAt = {
+                gte: new Date(startDate),
+                lte: new Date(endDate)
             };
         }
 
-        const scans = await Scan.findAll({
-            where: whereClause,
-            order: [['createdAt', 'DESC']]
+        // Récupérer les données
+        const scans = await prisma.scan.findMany({
+            where: whereCondition,
+            orderBy: { createdAt: 'desc' }
         });
 
         // Convertir en format CSV

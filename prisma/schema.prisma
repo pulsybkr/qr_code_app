@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Controlleur {
+  id                 String   @id @default(uuid())
+  firstName          String
+  lastName           String
+  photoData          String?
+  email              String   @unique
+  password           String
+  role               String   @default("controlleur")
+  tokenResetPassword String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  scans              Scan[]
+}
+
+model Scan {
+  id             String    @id @default(uuid())
+  controlleur    Controlleur @relation(fields: [controlleurId], references: [id])
+  controlleurId  String
+  licence        String
+  nom            String?
+  prenom         String?
+  photoUrl       String?
+  localPhotoPath String?
+  rawData        String?
+  htmlStructure  String?
+  photoData      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("scans")
+} 

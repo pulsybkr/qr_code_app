@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: qr_app_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: uib8ObDGWguzN6zU
+      POSTGRES_DB: qr_code_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - qr_app_network
+
+  adminer:
+    image: adminer:latest
+    container_name: qr_app_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - qr_app_network
+
+networks:
+  qr_app_network:
+    driver: bridge
+
+volumes:
+  postgres_data: 

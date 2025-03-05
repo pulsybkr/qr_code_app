@@ -1,72 +1,100 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Op } from 'sequelize';
-import Scan from '../../../../../models/Scan';
+import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
     try {
+        // Récupération et validation des paramètres de requête
         const searchParams = new URL(req.url).searchParams;
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '10');
-        const search = searchParams.get('search') || '';
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+        const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+        const search = searchParams.get('search')?.trim() || '';
 
-        // Obtenir la date du jour (début et fin)
+        // Définition de la plage horaire pour aujourd'hui (00:00:00 à 23:59:59)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        let whereClause: any = {};
+        // Construction de la condition where de base avec la date
+        const dateCondition: Prisma.ScanWhereInput = {
+            createdAt: {
+                gte: today,
+                lt: tomorrow
+            }
+        };
 
-        // Construire la clause where
+        // Construction de la condition where complète
+        let whereCondition: Prisma.ScanWhereInput;
+        
         if (search) {
-            whereClause = {
-                [Op.and]: [
+            whereCondition = {
+                AND: [
+                    dateCondition,
                     {
-                        createdAt: {
-                            [Op.gte]: today,
-                            [Op.lt]: tomorrow
-                        }
-                    },
-                    {
-                        [Op.or]: [
-                            { nom: { [Op.iLike]: `%${search}%` } },
-                            { prenom: { [Op.iLike]: `%${search}%` } },
-                            { licence: { [Op.iLike]: `%${search}%` } }
+                        OR: [
+                            { nom: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+                            { prenom: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+                            { licence: { contains: search, mode: 'insensitive' as Prisma.QueryMode } }
                         ]
                     }
                 ]
             };
         } else {
-            whereClause = {
-                createdAt: {
-                    [Op.gte]: today,
-                    [Op.lt]: tomorrow
-                }
-            };
+            whereCondition = dateCondition;
         }
 
-        // Récupération des données avec pagination
-        const { count, rows } = await Scan.findAndCountAll({
-            where: whereClause,
-            order: [['createdAt', 'DESC']],
-            limit,
-            offset: (page - 1) * limit
-        });
+        // Utilisation d'une transaction Prisma pour garantir la cohérence des données
+        const [count, rows] = await prisma.$transaction([
+            // Comptage du nombre total d'enregistrements
+            prisma.scan.count({
+                where: whereCondition
+            }),
+            // Récupération des données paginées
+            prisma.scan.findMany({
+                where: whereCondition,
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip: (page - 1) * limit,
+                include: {
+                    // Inclusion des informations du contrôleur (sans le mot de passe)
+                    controlleur: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true
+                        }
+                    }
+                }
+            })
+        ]);
 
+        // Calcul du nombre total de pages
+        const totalPages = Math.ceil(count / limit);
+
+        // Retour de la réponse formatée
         return NextResponse.json({
             success: true,
             data: rows,
             total: count,
-            totalPages: Math.ceil(count / limit),
-            currentPage: page
+            totalPages,
+            currentPage: page,
+            limit
         });
 
     } catch (error) {
         console.error('Erreur lors de la récupération des scans:', error);
+        
+        // Gestion plus précise des erreurs de Prisma
+        const errorMessage = error instanceof Error 
+            ? `Erreur lors de la récupération des scans: ${error.message}` 
+            : 'Erreur inconnue lors de la récupération des scans';
+            
         return NextResponse.json({ 
             success: false,
-            error: 'Erreur lors de la récupération des scans' 
+            error: errorMessage
         }, { status: 500 });
     }
 } 

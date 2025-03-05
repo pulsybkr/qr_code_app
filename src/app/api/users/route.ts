@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Controlleur from '../../../../models/User';
+import prisma from '@/lib/prisma';
 import { generateRandomPassword, passwordHash } from '@/utils/auth/ft_auth';
 import { verifyAdmin } from '@/utils/auth/verifyAdmin';
 
@@ -12,9 +12,16 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        const users = await Controlleur.findAll({
+        const users = await prisma.controlleur.findMany({
             where: { role: 'controlleur' },
-            attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'password']
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true,
+                password: true
+            }
         });
 
         return NextResponse.json({ users }, { status: 200 });
@@ -38,7 +45,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
         }
         // Vérifier si l'email existe déjà
-        const existingUser = await Controlleur.findOne({ where: { email } });
+        const existingUser = await prisma.controlleur.findUnique({ where: { email } });
         if (existingUser) {
             return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 });
         }
@@ -47,12 +54,14 @@ export async function POST(req: NextRequest) {
         const temporaryPassword = generateRandomPassword();
 
         // Créer l'utilisateur
-        await Controlleur.create({
-            firstName,
-            lastName,
-            email,
-            password: passwordHash(temporaryPassword),
-            role: 'controlleur'
+        await prisma.controlleur.create({
+            data: {
+                firstName,
+                lastName,
+                email,
+                password: passwordHash(temporaryPassword),
+                role: 'controlleur'
+            }
         });
 
         return NextResponse.json({ 

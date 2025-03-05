@@ -1,0 +1,10 @@
+NODE_ENV=development
+DB_USER=postgres.hzsfqxmqbgdombxpgagt
+DB_PASSWORD=uib8ObDGWguzN6zU
+DB_NAME=postgres
+DB_HOST=aws-0-eu-central-1.pooler.supabase.com
+DB_PORT=5432
+CODE_REGISTRATION=G4DC1S89
+DATABASE_URL="postgresql://postgres:uib8ObDGWguzN6zU@localhost:5432/qr_code_app"
+JWT_SECRET=eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTc0MTIwMzM1MSwiaWF0IjoxNzQxMjAzMzUxfQ
+CHROMIUM_PATH=C:/Users/pulsy/.cache/puppeteer/chrome-headless-shell/win64-131.0.6778.204/chrome-headless-shell-win64/chrome-headless-shell.exe

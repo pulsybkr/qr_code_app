@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-
-import Scan from '../../../../../models/Scan';
-import { Op } from 'sequelize';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,11 +24,11 @@ export async function POST(req: NextRequest) {
         // Vérification du délai
         const uneHeureAvant = new Date(Date.now() - (60 * 60 * 1000));
         
-        const existingScan = await Scan.findOne({
+        const existingScan = await prisma.scan.findFirst({
             where: {
                 licence: body.licence,
                 createdAt: {
-                    [Op.gt]: uneHeureAvant
+                    gt: uneHeureAvant
                 }
             }
         });
@@ -43,13 +41,15 @@ export async function POST(req: NextRequest) {
         }
 
         // Création du nouveau scan
-        const newScan = await Scan.create({
-            controlleurId,
-            licence: body.licence,
-            nom: body.nom,
-            prenom: body.prenom,
-            photoUrl: body.photoUrl,
-            photoData: body.photoData
+        const newScan = await prisma.scan.create({
+            data: {
+                controlleurId,
+                licence: body.licence,
+                nom: body.nom,
+                prenom: body.prenom,
+                photoUrl: body.photoUrl,
+                photoData: body.photoData
+            }
         });
 
 

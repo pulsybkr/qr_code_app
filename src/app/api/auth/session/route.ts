@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import Controlleur from '../../../../../models/User';
+import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
     try {
@@ -17,12 +17,18 @@ export async function GET(req: NextRequest) {
 
         try {
             // Vérifier le token
-            const decoded = jwt.verify(token.value, process.env.JWT_SECRET as string) as { userId: number };
+            const decoded = jwt.verify(token.value, process.env.JWT_SECRET as string) as { userId: string };
             
             // Vérifier si l'utilisateur existe toujours
-            const user = await Controlleur.findOne({ 
+            const user = await prisma.controlleur.findUnique({ 
                 where: { id: decoded.userId },
-                attributes: { exclude: ['password', "id", "createdAt", "updatedAt", "tokenResetPassword"] } // Exclure le mot de passe
+                select: { 
+                    firstName: true, 
+                    lastName: true, 
+                    email: true, 
+                    role: true, 
+                    photoData: true 
+                }
             });
 
             if (!user) {
@@ -67,12 +73,12 @@ export async function POST(req: NextRequest) {
 
         try {
             // Vérifier le token
-            const decoded = jwt.verify(token.value, process.env.JWT_SECRET as string) as { userId: number };
+            const decoded = jwt.verify(token.value, process.env.JWT_SECRET as string) as { userId: string };
             
             // Vérifier si l'utilisateur existe et a le rôle admin
-            const user = await Controlleur.findOne({ 
+            const user = await prisma.controlleur.findUnique({ 
                 where: { id: decoded.userId },
-                attributes: ['role'] // On ne récupère que le rôle
+                select: { role: true }
             });
 
             if (!user) {

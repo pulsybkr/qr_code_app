@@ -33,6 +33,7 @@ export default function UsersManagement() {
       const data = await response.json();
       setUsers(data.users);
     } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs:", error);
       Swal.fire("Erreur", "Impossible de charger les utilisateurs", "error");
     } finally {
       setLoading(false);

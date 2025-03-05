@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Controlleur from '../../../../../models/User';
+import prisma from '@/lib/prisma';
 import { generateRandomPassword, passwordHash } from '@/utils/auth/ft_auth';
 import { verifyAdmin } from '@/utils/auth/verifyAdmin';
 
@@ -14,7 +14,9 @@ export async function DELETE(
         }
 
         const id = request.url.split('/').pop();
-        const user = await Controlleur.findOne({ 
+        
+        // Vérifier si l'utilisateur existe et est un contrôleur
+        const user = await prisma.controlleur.findFirst({ 
             where: { 
                 id: id,
                 role: 'controlleur'
@@ -25,7 +27,9 @@ export async function DELETE(
             return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
         }
 
-        await user.destroy();
+        // Supprimer l'utilisateur
+        await prisma.controlleur.delete({ where: { id: id } });
+        
         return NextResponse.json({ message: 'Utilisateur supprimé avec succès' }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -43,7 +47,9 @@ export async function POST(
         }
 
         const id = request.url.split('/').pop();
-        const user = await Controlleur.findOne({ 
+        
+        // Vérifier si l'utilisateur existe et est un contrôleur
+        const user = await prisma.controlleur.findFirst({ 
             where: { 
                 id: id,
                 role: 'controlleur'
@@ -55,9 +61,13 @@ export async function POST(
         }
 
         const newPassword = generateRandomPassword();
-        await user.update({ 
-            password: passwordHash(newPassword),
-            tempPassword: newPassword
+        
+        // Mettre à jour le mot de passe
+        await prisma.controlleur.update({
+            where: { id: id },
+            data: { 
+                password: passwordHash(newPassword)
+            }
         });
 
         return NextResponse.json({ 
